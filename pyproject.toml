@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-salmon"
+version = "0.1.0"
+description = "A controlled agentic loop that makes uncertainty and human authority explicit."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "aixstudio" }]
+dependencies = []
+
+[project.scripts]
+agentic-salmon = "agentic_salmon.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
