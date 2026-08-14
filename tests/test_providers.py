@@ -54,6 +54,68 @@ class ProviderTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "does not match"):
                 ReviewedFixtureProvider(fixture, image).perceive()
 
+    def test_legacy_confidence_annotation_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "input.jpeg"
+            image.write_bytes(b"reviewed image")
+            fixture = root / "fixture.json"
+            fixture.write_text(
+                json.dumps(
+                    {
+                        "provenance": "test",
+                        "input_image_sha256": hashlib.sha256(
+                            image.read_bytes()
+                        ).hexdigest(),
+                        "observations": [
+                            {
+                                "observation_id": "visible",
+                                "claim": "A portion is visible.",
+                                "source": "test",
+                                "confidence": 0.9,
+                            }
+                        ],
+                        "unknowns": ["identity"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "confidence"):
+                ReviewedFixtureProvider(fixture, image).perceive()
+
+    def test_upstream_canonical_id_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "input.jpeg"
+            image.write_bytes(b"reviewed image")
+            fixture = root / "fixture.json"
+            fixture.write_text(
+                json.dumps(
+                    {
+                        "provenance": "test",
+                        "input_image_sha256": hashlib.sha256(
+                            image.read_bytes()
+                        ).hexdigest(),
+                        "observations": [],
+                        "unknowns": [],
+                        "entity_mentions": [
+                            {
+                                "mention_id": "portion",
+                                "canonical_id": "food_portions_1",
+                                "entity_kind": "food_portion",
+                                "label": "portion",
+                                "evidence_claim": "visible",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "canonical_id"):
+                ReviewedFixtureProvider(fixture, image).perceive()
+
 
 if __name__ == "__main__":
     unittest.main()
