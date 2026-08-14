@@ -4,16 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentic-salmon"
-version = "0.1.0"
+version = "0.2.0"
 description = "A controlled agentic loop that makes uncertainty and human authority explicit."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "aixstudio" }]
-dependencies = []
+dependencies = [
+    "fastembed>=0.8,<1",
+    "langgraph>=1.2,<2",
+    "mcp>=2,<3",
+]
 
 [project.scripts]
 agentic-salmon = "agentic_salmon.cli:main"
+agentic-salmon-mcp = "agentic_salmon.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+agentic_salmon = ["knowledge/*.json"]
