@@ -117,30 +117,34 @@ def _display_interrupt(payload: dict[str, object], run_id: str) -> None:
     print("Retained unknowns:")
     for item in payload.get("retained_unknowns", []):
         print(f"- {item}")
-    print("Available hypotheses:")
-    for item in payload.get("offered_hypotheses", []):
-        if isinstance(item, dict):
-            eligibility = (
-                "action eligible"
-                if item.get("action_eligible")
-                else "not action eligible"
-            )
-            print(
-                f"- {item['hypothesis_id']}: {item['label']} "
-                f"[{item['status']}; {eligibility}]"
-            )
+    print("Hypothesis choices:")
+    for number, item in enumerate(_offered_hypotheses(payload), start=1):
+        eligibility = (
+            "action eligible"
+            if item.get("action_eligible")
+            else "not action eligible"
+        )
+        print(
+            f"{number}) {item['label']} "
+            f"[{item['status']}; {eligibility}] "
+            f"(key: {item['hypothesis_id']})"
+        )
 
 
 def _prompt_review(payload: dict[str, object]) -> HumanEvidence:
-    selected = input("Hypothesis ID, or 'stop': ").strip()
-    if selected.lower() == "stop":
+    offered = _offered_hypotheses(payload)
+    choice = input("Choose a number, hypothesis key, or 'stop': ").strip()
+    if choice.lower() == "stop":
         return HumanEvidence(authorizes_bounded_guidance=False)
+    selected = choice
+    if choice.isdigit():
+        index = int(choice) - 1
+        if 0 <= index < len(offered):
+            selected = str(offered[index]["hypothesis_id"])
     allowed = {
         str(item["hypothesis_id"])
-        for item in payload.get("offered_hypotheses", [])
-        if isinstance(item, dict)
-        and "hypothesis_id" in item
-        and item.get("action_eligible") is True
+        for item in offered
+        if item.get("action_eligible") is True
     }
     if selected not in allowed:
         return HumanEvidence(selected_hypothesis=selected)
@@ -159,3 +163,11 @@ def _prompt_review(payload: dict[str, object]) -> HumanEvidence:
 
 def _prompt_yes_no(prompt: str) -> bool:
     return input(prompt).strip().lower() in {"y", "yes"}
+
+
+def _offered_hypotheses(payload: dict[str, object]) -> list[dict[str, object]]:
+    return [
+        item
+        for item in payload.get("offered_hypotheses", [])
+        if isinstance(item, dict) and "hypothesis_id" in item
+    ]
