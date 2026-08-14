@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentic-salmon"
-version = "0.2.0"
+version = "0.2.1"
 description = "A controlled agentic loop that makes uncertainty and human authority explicit."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13,<3.14"
 license = { text = "MIT" }
 authors = [{ name = "aixstudio" }]
 dependencies = [
